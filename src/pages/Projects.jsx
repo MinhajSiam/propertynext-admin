@@ -2,21 +2,35 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { PlusCircle, Building2, MapPin, Trash2, Edit, X, Save } from 'lucide-react';
 
+// --- ছোট কম্পোনেন্টগুলো মূল ফাংশনের বাইরে রাখা হলো (যাতে ফোকাস না হারায়) ---
+const SectionTitle = ({ title }) => (
+    <h3 className="text-md font-bold text-gray-800 border-b pb-2 mb-4 mt-8">{title}</h3>
+);
+
+const InputField = ({ label, name, value, onChange, type = "text", placeholder, isTextArea = false }) => (
+    <div className="mb-4">
+        <label className="block text-xs font-bold text-gray-600 uppercase mb-1">{label}</label>
+        {isTextArea ? (
+            <textarea name={name} value={value} onChange={onChange} rows="3"
+                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md focus:ring-1 focus:ring-brandLime focus:border-brandLime text-sm" placeholder={placeholder} />
+        ) : (
+            <input type={type} name={name} value={value} onChange={onChange}
+                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md focus:ring-1 focus:ring-brandLime focus:border-brandLime text-sm" placeholder={placeholder} />
+        )}
+    </div>
+);
+// --------------------------------------------------------------------------
+
 const Projects = () => {
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(false);
     const [editingId, setEditingId] = useState(null);
 
-    // Form State (আপনার চাওয়া সব ফিল্ড এখানে আছে)
     const [formData, setFormData] = useState({
         title: '', location: '', status: 'upcoming', mainImage: '',
-        // At a Glance
         landArea: '', facing: '', height: '', totalUnits: '', sizeOfUnits: '', handover: '',
-        // Overview & Technical
         overview: '', structuralFeatures: '', flooring: '', kitchenBath: '', electrical: '',
-        // Location Advantages (Comma separated list)
         locationAdvantages: '',
-        // Media (Comma separated links)
         galleryImages: '', floorPlanA: '', floorPlanB: '', groundFloorPlan: '', videoUrl: '', mapUrl: ''
     });
 
@@ -35,10 +49,24 @@ const Projects = () => {
         e.preventDefault();
         setLoading(true);
 
-        // Data formatting before sending to backend
         const submitData = { ...formData };
+
+        // কমা দিয়ে আলাদা করা ডেটাগুলোকে Array তে রূপান্তর
         if (formData.galleryImages) submitData.galleryImages = formData.galleryImages.split(',').map(url => url.trim());
         if (formData.locationAdvantages) submitData.locationAdvantages = formData.locationAdvantages.split(',').map(item => item.trim());
+
+        // --- Google Map Iframe Fix (অটোমেটিক শুধু লিংক বের করে নেবে) ---
+        if (submitData.mapUrl && submitData.mapUrl.includes('<iframe')) {
+            const match = submitData.mapUrl.match(/src="([^"]+)"/);
+            if (match) submitData.mapUrl = match[1]; // শুধু লিংকটি রাখবে
+        }
+
+        // YouTube Video Iframe Fix (যদি ভিডিওর ক্ষেত্রেও পুরো iframe পেস্ট করেন)
+        if (submitData.videoUrl && submitData.videoUrl.includes('<iframe')) {
+            const match = submitData.videoUrl.match(/src="([^"]+)"/);
+            if (match) submitData.videoUrl = match[1];
+        }
+        // -------------------------------------------------------------
 
         try {
             if (editingId) {
@@ -82,24 +110,6 @@ const Projects = () => {
         setEditingId(null);
     };
 
-    // UI Components
-    const SectionTitle = ({ title }) => (
-        <h3 className="text-md font-bold text-gray-800 border-b pb-2 mb-4 mt-8">{title}</h3>
-    );
-
-    const InputField = ({ label, name, type = "text", placeholder, isTextArea = false }) => (
-        <div className="mb-4">
-            <label className="block text-xs font-bold text-gray-600 uppercase mb-1">{label}</label>
-            {isTextArea ? (
-                <textarea name={name} value={formData[name]} onChange={handleChange} rows="3"
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md focus:ring-1 focus:ring-brandLime focus:border-brandLime text-sm" placeholder={placeholder} />
-            ) : (
-                <input type={type} name={name} value={formData[name]} onChange={handleChange}
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md focus:ring-1 focus:ring-brandLime focus:border-brandLime text-sm" placeholder={placeholder} />
-            )}
-        </div>
-    );
-
     return (
         <div className="pb-10">
             <div className="mb-6 flex justify-between items-end">
@@ -111,7 +121,6 @@ const Projects = () => {
 
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
 
-                {/* Left Side: BIG Form */}
                 <div className="xl:col-span-8 bg-white p-6 md:p-8 rounded-xl shadow-sm border border-gray-100">
                     <div className="flex justify-between items-center mb-6">
                         <h2 className="text-lg font-bold text-darkGreen flex items-center gap-2">
@@ -125,9 +134,9 @@ const Projects = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
 
                             <div className="md:col-span-2"><SectionTitle title="1. Basic Information" /></div>
-                            <InputField label="Project Title *" name="title" placeholder="e.g. The Lumina Residencies" />
-                            <InputField label="Location *" name="location" placeholder="e.g. South Kafrul, Dhaka" />
-                            <InputField label="Main Cover Image URL *" name="mainImage" placeholder="https://..." />
+                            <InputField label="Project Title *" name="title" value={formData.title} onChange={handleChange} placeholder="e.g. The Lumina Residencies" />
+                            <InputField label="Location *" name="location" value={formData.location} onChange={handleChange} placeholder="e.g. South Kafrul, Dhaka" />
+                            <InputField label="Main Cover Image URL *" name="mainImage" value={formData.mainImage} onChange={handleChange} placeholder="https://..." />
                             <div className="mb-4">
                                 <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Status *</label>
                                 <select name="status" value={formData.status} onChange={handleChange} className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm">
@@ -138,36 +147,36 @@ const Projects = () => {
                             </div>
 
                             <div className="md:col-span-2"><SectionTitle title="2. At a Glance" /></div>
-                            <InputField label="Land Area" name="landArea" placeholder="e.g. 6.55 Katha" />
-                            <InputField label="Facing" name="facing" placeholder="e.g. North-West" />
-                            <InputField label="Building Height" name="height" placeholder="e.g. B + GF + 8 Floors" />
-                            <InputField label="Total Units" name="totalUnits" placeholder="e.g. 16" />
-                            <InputField label="Size of Units" name="sizeOfUnits" placeholder="e.g. 1135 Sft, 1175 Sft" />
-                            <InputField label="Handover Date" name="handover" placeholder="e.g. July 2026" />
+                            <InputField label="Land Area" name="landArea" value={formData.landArea} onChange={handleChange} placeholder="e.g. 6.55 Katha" />
+                            <InputField label="Facing" name="facing" value={formData.facing} onChange={handleChange} placeholder="e.g. North-West" />
+                            <InputField label="Building Height" name="height" value={formData.height} onChange={handleChange} placeholder="e.g. B + GF + 8 Floors" />
+                            <InputField label="Total Units" name="totalUnits" value={formData.totalUnits} onChange={handleChange} placeholder="e.g. 16" />
+                            <InputField label="Size of Units" name="sizeOfUnits" value={formData.sizeOfUnits} onChange={handleChange} placeholder="e.g. 1135 Sft, 1175 Sft" />
+                            <InputField label="Handover Date" name="handover" value={formData.handover} onChange={handleChange} placeholder="e.g. July 2026" />
 
                             <div className="md:col-span-2"><SectionTitle title="3. Overview & Location" /></div>
                             <div className="md:col-span-2">
-                                <InputField label="Project Overview Details" name="overview" isTextArea={true} placeholder="Write the main description here..." />
+                                <InputField label="Project Overview Details" name="overview" value={formData.overview} onChange={handleChange} isTextArea={true} placeholder="Write the main description here..." />
                             </div>
                             <div className="md:col-span-2">
-                                <InputField label="Location Advantages (Comma separated)" name="locationAdvantages" placeholder="e.g. Airport - 15 Mins, Metro Station - 5 Mins" />
-                                <InputField label="Google Map Embed URL" name="mapUrl" placeholder="https://www.google.com/maps/embed?..." />
+                                <InputField label="Location Advantages (Comma separated)" name="locationAdvantages" value={formData.locationAdvantages} onChange={handleChange} placeholder="e.g. Airport - 15 Mins, Metro Station - 5 Mins" />
+                                <InputField label="Google Map Embed URL" name="mapUrl" value={formData.mapUrl} onChange={handleChange} placeholder="https://www.google.com/maps/embed?..." />
                             </div>
 
                             <div className="md:col-span-2"><SectionTitle title="4. Technical Specifications" /></div>
-                            <InputField label="Structural Features" name="structuralFeatures" isTextArea={true} placeholder="Bullet points using commas..." />
-                            <InputField label="Flooring & Finishing" name="flooring" isTextArea={true} placeholder="Bullet points using commas..." />
-                            <InputField label="Kitchen & Bathrooms" name="kitchenBath" isTextArea={true} placeholder="Bullet points using commas..." />
-                            <InputField label="Electrical & Elevators" name="electrical" isTextArea={true} placeholder="Bullet points using commas..." />
+                            <InputField label="Structural Features" name="structuralFeatures" value={formData.structuralFeatures} onChange={handleChange} isTextArea={true} placeholder="Bullet points using commas..." />
+                            <InputField label="Flooring & Finishing" name="flooring" value={formData.flooring} onChange={handleChange} isTextArea={true} placeholder="Bullet points using commas..." />
+                            <InputField label="Kitchen & Bathrooms" name="kitchenBath" value={formData.kitchenBath} onChange={handleChange} isTextArea={true} placeholder="Bullet points using commas..." />
+                            <InputField label="Electrical & Elevators" name="electrical" value={formData.electrical} onChange={handleChange} isTextArea={true} placeholder="Bullet points using commas..." />
 
                             <div className="md:col-span-2"><SectionTitle title="5. Media & Gallery" /></div>
                             <div className="md:col-span-2">
-                                <InputField label="Gallery Images (Comma separated URLs)" name="galleryImages" isTextArea={true} placeholder="https://img1.jpg, https://img2.jpg" />
+                                <InputField label="Gallery Images (Comma separated URLs)" name="galleryImages" value={formData.galleryImages} onChange={handleChange} isTextArea={true} placeholder="https://img1.jpg, https://img2.jpg" />
                             </div>
-                            <InputField label="Virtual Tour (YouTube Embed URL)" name="videoUrl" placeholder="https://www.youtube.com/embed/..." />
-                            <InputField label="Floor Plan Type A (Image URL)" name="floorPlanA" placeholder="https://..." />
-                            <InputField label="Floor Plan Type B (Image URL)" name="floorPlanB" placeholder="https://..." />
-                            <InputField label="Ground Floor Plan (Image URL)" name="groundFloorPlan" placeholder="https://..." />
+                            <InputField label="Virtual Tour (YouTube Embed URL)" name="videoUrl" value={formData.videoUrl} onChange={handleChange} placeholder="https://www.youtube.com/embed/..." />
+                            <InputField label="Floor Plan Type A (Image URL)" name="floorPlanA" value={formData.floorPlanA} onChange={handleChange} placeholder="https://..." />
+                            <InputField label="Floor Plan Type B (Image URL)" name="floorPlanB" value={formData.floorPlanB} onChange={handleChange} placeholder="https://..." />
+                            <InputField label="Ground Floor Plan (Image URL)" name="groundFloorPlan" value={formData.groundFloorPlan} onChange={handleChange} placeholder="https://..." />
 
                         </div>
 
@@ -177,7 +186,6 @@ const Projects = () => {
                     </form>
                 </div>
 
-                {/* Right Side: Projects List (Sidebar style) */}
                 <div className="xl:col-span-4 flex flex-col gap-4">
                     <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 mb-2">
                         <h3 className="font-bold text-gray-800">Saved Projects ({projects.length})</h3>
