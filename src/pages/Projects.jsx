@@ -20,7 +20,7 @@ const Projects = () => {
 
     const fetchProjects = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/api/projects/all');
+            const response = await axios.get('https://propertynextv2-backend.onrender.com/api/projects/all');
             if (response.data.success) {
                 setProjects(response.data.data);
             }
@@ -40,11 +40,11 @@ const Projects = () => {
         try {
             if (editingId) {
                 // Update Project
-                const response = await axios.put(`http://localhost:5000/api/projects/${editingId}`, formData);
+                const response = await axios.put(`https://propertynextv2-backend.onrender.com/api/projects/${editingId}`, formData);
                 if (response.data.success) alert('Project updated successfully! 🎉');
             } else {
                 // Add New Project
-                const response = await axios.post('http://localhost:5000/api/projects/add', formData);
+                const response = await axios.post('https://propertynextv2-backend.onrender.com/api/projects/add', formData);
                 if (response.data.success) alert('Project added successfully! 🎉');
             }
 
@@ -62,7 +62,7 @@ const Projects = () => {
     const handleDelete = async (id) => {
         if (window.confirm("Are you sure you want to delete this project?")) {
             try {
-                const response = await axios.delete(`http://localhost:5000/api/projects/${id}`);
+                const response = await axios.delete(`https://propertynextv2-backend.onrender.com/api/projects/${id}`);
                 if (response.data.success) {
                     fetchProjects(); // ডিলিট হওয়ার পর লিস্ট আপডেট করা
                 }
@@ -195,8 +195,8 @@ const Projects = () => {
 
                                                 {/* Status Badge (Top Left) */}
                                                 <span className={`absolute top-3 left-3 text-[10px] font-bold px-3 py-1 rounded-full uppercase shadow-md z-20 ${project.status === 'completed' ? 'bg-green-500 text-white' :
-                                                        project.status === 'ongoing' ? 'bg-blue-500 text-white' :
-                                                            'bg-brandLime text-darkGreen'
+                                                    project.status === 'ongoing' ? 'bg-blue-500 text-white' :
+                                                        'bg-brandLime text-darkGreen'
                                                     }`}>
                                                     {project.status}
                                                 </span>
