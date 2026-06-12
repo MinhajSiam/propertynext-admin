@@ -11,14 +11,15 @@ const SectionTitle = ({ title }) => (
     <h3 className="text-md font-bold text-gray-800 border-b pb-2 mb-4 mt-8">{title}</h3>
 );
 
+// ফিক্স: value তে value || '' দেওয়া হয়েছে যাতে undefined না হয়
 const InputField = ({ label, name, value, onChange, type = "text", placeholder, isTextArea = false }) => (
     <div className="mb-4">
         <label className="block text-xs font-bold text-gray-600 uppercase mb-1">{label}</label>
         {isTextArea ? (
-            <textarea name={name} value={value} onChange={onChange} rows="3"
+            <textarea name={name} value={value || ''} onChange={onChange} rows="3"
                 className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md focus:ring-1 focus:ring-brandLime focus:border-brandLime text-sm" placeholder={placeholder} />
         ) : (
-            <input type={type} name={name} value={value} onChange={onChange}
+            <input type={type} name={name} value={value || ''} onChange={onChange}
                 className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md focus:ring-1 focus:ring-brandLime focus:border-brandLime text-sm" placeholder={placeholder} />
         )}
     </div>
@@ -28,16 +29,17 @@ const InputField = ({ label, name, value, onChange, type = "text", placeholder, 
 const Projects = () => {
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [uploading, setUploading] = useState(false); // ফাইল আপলোডের আলাদা স্টেট
+    const [uploading, setUploading] = useState(false);
     const [editingId, setEditingId] = useState(null);
 
+    // ফিক্স: locationAdvantages এবং galleryImages কে অ্যারে [] হিসেবে সেট করা হয়েছে
     const [formData, setFormData] = useState({
         title: '', location: '', status: 'upcoming', mainImage: '',
         landArea: '', facing: '', height: '', totalUnits: '', sizeOfUnits: '', handover: '',
         overview: '', structuralFeatures: '', flooring: '', kitchenBath: '', electrical: '',
-        locationAdvantages: '', galleryImages: '',
+        locationAdvantages: [], galleryImages: [],
         floorPlanA: '', floorPlanB: '', groundFloorPlan: '', videoUrl: '', mapUrl: '',
-        brochureUrl: '' // নতুন ব্রোশিওর ফিল্ড
+        brochureUrl: ''
     });
 
     useEffect(() => { fetchProjects(); }, []);
@@ -49,7 +51,6 @@ const Projects = () => {
         } catch (error) { console.error("Error fetching:", error); }
     };
 
-    // --- ফাইল আপলোড করার আপডেট করা ফাংশন (Image এবং PDF উভয়ের জন্য) ---
     const handleFileUpload = async (file) => {
         if (!file) return null;
         setUploading(true);
@@ -58,7 +59,6 @@ const Projects = () => {
         data.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
         try {
-            // এখানে /image/upload এর বদলে /auto/upload দেওয়া হয়েছে যাতে সব ফাইল সাপোর্ট করে
             const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`, {
                 method: 'POST',
                 body: data,
@@ -79,6 +79,33 @@ const Projects = () => {
         }
     };
 
+    const handleGalleryUpload = async (files) => {
+        setUploading(true);
+        const uploadedUrls = [];
+
+        for (let i = 0; i < files.length; i++) {
+            const data = new FormData();
+            data.append('file', files[i]);
+            data.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+            try {
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`, {
+                    method: 'POST',
+                    body: data,
+                });
+                const fileData = await res.json();
+                if (fileData.secure_url) {
+                    uploadedUrls.push(fileData.secure_url);
+                }
+            } catch (error) {
+                console.error("Gallery Upload Error:", error);
+            }
+        }
+
+        setUploading(false);
+        return uploadedUrls;
+    };
+
     const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
     const handleSubmit = async (e) => {
@@ -86,8 +113,13 @@ const Projects = () => {
         setLoading(true);
 
         const submitData = { ...formData };
-        if (formData.galleryImages && typeof formData.galleryImages === 'string') submitData.galleryImages = formData.galleryImages.split(',').map(url => url.trim());
-        if (formData.locationAdvantages && typeof formData.locationAdvantages === 'string') submitData.locationAdvantages = formData.locationAdvantages.split(',').map(item => item.trim());
+
+        if (typeof submitData.galleryImages === 'string') {
+            submitData.galleryImages = submitData.galleryImages.split(',').map(url => url.trim());
+        }
+        if (typeof submitData.locationAdvantages === 'string') {
+            submitData.locationAdvantages = submitData.locationAdvantages.split(',').map(item => item.trim());
+        }
 
         if (submitData.mapUrl && submitData.mapUrl.includes('<iframe')) {
             const match = submitData.mapUrl.match(/src="([^"]+)"/);
@@ -124,24 +156,21 @@ const Projects = () => {
         }
     };
 
+    // ফিক্স: এডিট করার সময় ডেটা কনভার্ট না করে সরাসরি পাস করা হয়েছে
     const handleEdit = (project) => {
-        setFormData({
-            ...project,
-            galleryImages: project.galleryImages ? project.galleryImages.join(', ') : '',
-            locationAdvantages: project.locationAdvantages ? project.locationAdvantages.join(', ') : ''
-        });
+        setFormData({ ...project });
         setEditingId(project._id);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const resetForm = () => {
         setFormData({
-            title: '', location: '', status: 'upcoming', mainImage: '', landArea: '', facing: '', height: '', totalUnits: '', sizeOfUnits: '', handover: '', overview: '', structuralFeatures: '', flooring: '', kitchenBath: '', electrical: '', locationAdvantages: '', galleryImages: '', floorPlanA: '', floorPlanB: '', groundFloorPlan: '', videoUrl: '', mapUrl: '', brochureUrl: ''
+            title: '', location: '', status: 'upcoming', mainImage: '', landArea: '', facing: '', height: '', totalUnits: '', sizeOfUnits: '', handover: '', overview: '', structuralFeatures: '', flooring: '', kitchenBath: '', electrical: '', locationAdvantages: [], galleryImages: [], floorPlanA: '', floorPlanB: '', groundFloorPlan: '', videoUrl: '', mapUrl: '', brochureUrl: ''
         });
         setEditingId(null);
     };
 
-    // ফাইল ইনপুট ফিল্ডের জন্য কাস্টম কম্পোনেন্ট (কোড গোছানোর জন্য)
+    // ফাইল ইনপুট ফিল্ডের জন্য কাস্টম কম্পোনেন্ট
     const FileUploadField = ({ label, name, accept }) => (
         <div className="mb-4">
             <label className="block text-xs font-bold text-gray-600 uppercase mb-1">{label}</label>
@@ -183,7 +212,6 @@ const Projects = () => {
                             <InputField label="Project Title *" name="title" value={formData.title} onChange={handleChange} placeholder="e.g. The Lumina Residencies" />
                             <InputField label="Location *" name="location" value={formData.location} onChange={handleChange} placeholder="e.g. South Kafrul, Dhaka" />
 
-                            {/* মেইন কভার ইমেজ সরাসরি আপলোড */}
                             <FileUploadField label="Main Cover Image *" name="mainImage" accept="image/*" />
 
                             <div className="mb-4">
@@ -208,12 +236,14 @@ const Projects = () => {
                                 <InputField label="Project Overview Details" name="overview" value={formData.overview} onChange={handleChange} isTextArea={true} placeholder="Write the main description here..." />
                             </div>
 
-                            {/* ব্রোশিওর PDF সরাসরি আপলোড বাটন */}
                             <FileUploadField label="Project Brochure (PDF)" name="brochureUrl" accept=".pdf" />
 
                             <InputField label="Google Map Embed URL" name="mapUrl" value={formData.mapUrl} onChange={handleChange} placeholder="Paste Map code or link here..." />
                             <div className="md:col-span-2">
-                                <InputField label="Location Advantages (Comma separated)" name="locationAdvantages" value={formData.locationAdvantages} onChange={handleChange} placeholder="e.g. Airport - 15 Mins, Metro Station - 5 Mins" />
+                                {/* ফিক্স: locationAdvantages অ্যারে থাকলে জয়েন করে দেখাবে */}
+                                <InputField label="Location Advantages (Comma separated)" name="locationAdvantages"
+                                    value={Array.isArray(formData.locationAdvantages) ? formData.locationAdvantages.join(', ') : formData.locationAdvantages}
+                                    onChange={handleChange} placeholder="e.g. Airport - 15 Mins, Metro Station - 5 Mins" />
                             </div>
 
                             <div className="md:col-span-2"><SectionTitle title="4. Technical Specifications" /></div>
@@ -222,15 +252,60 @@ const Projects = () => {
                             <InputField label="Kitchen & Bathrooms" name="kitchenBath" value={formData.kitchenBath} onChange={handleChange} isTextArea={true} placeholder="Bullet points using commas..." />
                             <InputField label="Electrical & Elevators" name="electrical" value={formData.electrical} onChange={handleChange} isTextArea={true} placeholder="Bullet points using commas..." />
 
-                            <div className="md:col-span-2"><SectionTitle title="5. Media & Floor Plans" /></div>
                             <div className="md:col-span-2">
-                                <InputField label="Gallery Images (Comma separated URLs for now)" name="galleryImages" value={formData.galleryImages} onChange={handleChange} isTextArea={true} placeholder="https://img1.jpg, https://img2.jpg" />
+                                <div className="md:col-span-2"><SectionTitle title="5. Media & Floor Plans" /></div>
+
+                                <div className="md:col-span-2 mb-6">
+                                    <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Gallery Images (Multiple Selection)</label>
+                                    <input
+                                        type="file"
+                                        multiple
+                                        accept="image/*"
+                                        onChange={async (e) => {
+                                            const urls = await handleGalleryUpload(e.target.files);
+                                            if (urls.length > 0) {
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    galleryImages: prev.galleryImages ? [...prev.galleryImages, ...urls] : urls
+                                                }));
+                                                alert(`${urls.length} images uploaded to gallery! 📸`);
+                                            }
+                                        }}
+                                        className="block w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-brandLime file:text-gray-900 hover:file:bg-lime-300 cursor-pointer"
+                                    />
+
+                                    {formData.galleryImages && formData.galleryImages.length > 0 && (
+                                        <div className="flex flex-wrap gap-2 mt-3 p-3 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                                            {formData.galleryImages.map((img, idx) => (
+                                                <div key={idx} className="relative group w-16 h-16">
+                                                    <img src={img} className="w-full h-full object-cover rounded border border-gray-200" alt="Preview" />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const updatedGallery = formData.galleryImages.filter((_, i) => i !== idx);
+                                                            setFormData({ ...formData, galleryImages: updatedGallery });
+                                                        }}
+                                                        className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    >
+                                                        <X size={10} />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, galleryImages: [] })}
+                                                className="text-[10px] text-red-500 font-bold underline ml-2"
+                                            >
+                                                Clear All
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                             <div className="md:col-span-2">
                                 <InputField label="Virtual Tour (YouTube Embed URL)" name="videoUrl" value={formData.videoUrl} onChange={handleChange} placeholder="https://www.youtube.com/embed/..." />
                             </div>
 
-                            {/* ফ্লোর প্ল্যানগুলো সরাসরি আপলোড বাটন */}
                             <FileUploadField label="Floor Plan Type A" name="floorPlanA" accept="image/*" />
                             <FileUploadField label="Floor Plan Type B" name="floorPlanB" accept="image/*" />
                             <FileUploadField label="Ground Floor Plan" name="groundFloorPlan" accept="image/*" />
