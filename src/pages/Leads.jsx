@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Trash2 } from 'lucide-react'; // ডিলিট আইকনের জন্য
+import { Trash2 } from 'lucide-react';
 
 const Leads = () => {
     const [leads, setLeads] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        fetchLeads();
-    }, []);
-
-    // লিডগুলো লোড করা
-    const fetchLeads = async () => {
+    // লিডগুলো লোড করার ফাংশন
+    // isBackground = true হলে পেজে কোনো লোডিং স্পিনার আসবে না, সাইলেন্টলি ডেটা আপডেট হবে
+    const fetchLeads = async (isBackground = false) => {
+        if (!isBackground) setLoading(true);
         try {
             const response = await fetch('https://propertynextv2-backend.onrender.com/api/leads/all');
             const result = await response.json();
@@ -21,11 +19,23 @@ const Leads = () => {
         } catch (error) {
             console.error("Error fetching leads:", error);
         } finally {
-            setLoading(false);
+            if (!isBackground) setLoading(false);
         }
     };
 
-    // স্ট্যাটাস পরিবর্তন করার ফাংশন
+    useEffect(() => {
+        // পেজ ওপেন হওয়ার সাথে সাথে প্রথমবার ডেটা লোড করবে
+        fetchLeads(false);
+
+        // রিয়েল-টাইম ইফেক্ট: প্রতি ৫ সেকেন্ড পর পর ব্যাকগ্রাউন্ডে নতুন ডেটা চেক করবে
+        const intervalId = setInterval(() => {
+            fetchLeads(true);
+        }, 5000);
+
+        // ইউজার অন্য পেজে চলে গেলে টাইমার বন্ধ করে দেবে (মেমোরি লিক রোধ করার জন্য)
+        return () => clearInterval(intervalId);
+    }, []);
+
     const handleStatusChange = async (id, currentStatus) => {
         try {
             const response = await fetch(`https://propertynextv2-backend.onrender.com/api/leads/${id}/status`, {
@@ -36,7 +46,6 @@ const Leads = () => {
             const result = await response.json();
 
             if (result.success) {
-                // সফল হলে লোকাল স্টেট আপডেট করা
                 setLeads(leads.map(lead => lead._id === id ? { ...lead, status: currentStatus } : lead));
             } else {
                 alert('Status update failed!');
@@ -46,7 +55,6 @@ const Leads = () => {
         }
     };
 
-    // লিড ডিলিট করার ফাংশন
     const handleDelete = async (id) => {
         if (!window.confirm("Are you sure you want to delete this lead? This action cannot be undone.")) {
             return;
@@ -59,7 +67,6 @@ const Leads = () => {
             const result = await response.json();
 
             if (result.success) {
-                // সফল হলে লোকাল স্টেট থেকে লিডটি সরিয়ে দেওয়া
                 setLeads(leads.filter(lead => lead._id !== id));
             } else {
                 alert('Failed to delete lead!');
@@ -69,13 +76,12 @@ const Leads = () => {
         }
     };
 
-    // স্ট্যাটাস অনুযায়ী ব্যাজের কালার নির্ধারণ
     const getStatusColor = (status) => {
         switch (status) {
             case 'Contacted': return 'bg-blue-100 text-blue-700 border-blue-200';
             case 'Resolved': return 'bg-green-100 text-green-700 border-green-200';
-            case 'Spam': return 'bg-red-100 text-red-700 border-red-200';
-            default: return 'bg-yellow-100 text-yellow-700 border-yellow-200'; // 'New'
+            case 'Junk': return 'bg-red-100 text-red-700 border-red-200';
+            default: return 'bg-yellow-100 text-yellow-700 border-yellow-200';
         }
     };
 
@@ -91,9 +97,15 @@ const Leads = () => {
         <div className="p-6">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-800">Customer Leads</h2>
-                <span className="bg-lime-100 text-lime-800 text-sm font-bold px-4 py-2 rounded-full shadow-sm">
-                    Total Leads: {leads.length}
-                </span>
+                <div className="flex items-center gap-3">
+                    {/* রিয়েল-টাইম বোঝানোর জন্য একটি লাইভ ইন্ডিকেটর যুক্ত করা হলো */}
+                    <span className="flex items-center gap-1.5 text-xs font-bold text-green-600 bg-green-50 px-3 py-1.5 rounded-full border border-green-200">
+                        <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Live
+                    </span>
+                    <span className="bg-lime-100 text-lime-800 text-sm font-bold px-4 py-2 rounded-full shadow-sm">
+                        Total Leads: {leads.length}
+                    </span>
+                </div>
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -120,35 +132,30 @@ const Leads = () => {
                                 leads.map((lead) => (
                                     <tr key={lead._id} className="hover:bg-gray-50 transition-colors">
 
-                                        {/* Date Column */}
                                         <td className="py-4 px-6 text-sm text-gray-500 whitespace-nowrap align-top">
                                             {new Date(lead.createdAt).toLocaleDateString('en-GB', {
                                                 day: 'numeric', month: 'short', year: 'numeric'
                                             })}
                                         </td>
 
-                                        {/* Contact Details Column */}
                                         <td className="py-4 px-6 whitespace-nowrap align-top">
                                             <div className="text-sm font-bold text-gray-800">{lead.name}</div>
                                             <a href={`tel:${lead.phone}`} className="text-sm font-medium text-gray-600 hover:text-lime-600 block mt-1">
-                                                {lead.phone}
+                                                📞 {lead.phone}
                                             </a>
-                                            {lead.email && <div className="text-xs text-gray-400 mt-0.5"> {lead.email}</div>}
+                                            {lead.email && <div className="text-xs text-gray-400 mt-0.5">📧 {lead.email}</div>}
                                         </td>
 
-                                        {/* Project Interest Column */}
                                         <td className="py-4 px-6 align-top">
                                             <span className="inline-block bg-lime-50 text-lime-700 px-3 py-1 rounded-md text-xs font-bold border border-lime-200 whitespace-nowrap">
                                                 {lead.interest || 'General Inquiry'}
                                             </span>
                                         </td>
 
-                                        {/* Message Column (Fixed for wrapping) */}
                                         <td className="py-4 px-6 text-sm text-gray-600 min-w-[250px] max-w-[350px] whitespace-normal break-words align-top leading-relaxed">
                                             {lead.message || <span className="text-gray-400 italic">No message provided</span>}
                                         </td>
 
-                                        {/* Status Dropdown Column */}
                                         <td className="py-4 px-6 align-top whitespace-nowrap">
                                             <select
                                                 value={lead.status || 'New'}
@@ -158,11 +165,10 @@ const Leads = () => {
                                                 <option value="New" className="bg-white text-gray-800">🔴 New</option>
                                                 <option value="Contacted" className="bg-white text-gray-800">🔵 Contacted</option>
                                                 <option value="Resolved" className="bg-white text-gray-800">🟢 Resolved</option>
-                                                <option value="Spam" className="bg-white text-gray-800">⚫ Spam</option>
+                                                <option value="Junk" className="bg-white text-gray-800">⚫ Junk</option>
                                             </select>
                                         </td>
 
-                                        {/* Action Column (Delete) */}
                                         <td className="py-4 px-6 align-top text-center">
                                             <button
                                                 onClick={() => handleDelete(lead._id)}
