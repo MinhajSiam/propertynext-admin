@@ -31,8 +31,8 @@ const Sidebar = () => {
                             key={item.name}
                             to={item.path}
                             className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 ${isActive
-                                    ? 'bg-brandLime text-darkGreen font-bold shadow-lg shadow-brandLime/20'
-                                    : 'text-gray-400 hover:bg-white/5 hover:text-white font-medium'
+                                ? 'bg-brandLime text-darkGreen font-bold shadow-lg shadow-brandLime/20'
+                                : 'text-gray-400 hover:bg-white/5 hover:text-white font-medium'
                                 }`}
                         >
                             <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
