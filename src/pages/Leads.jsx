@@ -74,7 +74,7 @@ const Leads = () => {
         switch (status) {
             case 'Contacted': return 'bg-blue-100 text-blue-700 border-blue-200';
             case 'Resolved': return 'bg-green-100 text-green-700 border-green-200';
-            case 'Junk': return 'bg-red-100 text-red-700 border-red-200';
+            case 'Spam': return 'bg-red-100 text-red-700 border-red-200';
             default: return 'bg-yellow-100 text-yellow-700 border-yellow-200'; // 'New'
         }
     };
@@ -158,7 +158,7 @@ const Leads = () => {
                                                 <option value="New" className="bg-white text-gray-800">🔴 New</option>
                                                 <option value="Contacted" className="bg-white text-gray-800">🔵 Contacted</option>
                                                 <option value="Resolved" className="bg-white text-gray-800">🟢 Resolved</option>
-                                                <option value="Junk" className="bg-white text-gray-800">⚫ Junk</option>
+                                                <option value="Spam" className="bg-white text-gray-800">⚫ Spam</option>
                                             </select>
                                         </td>
 
