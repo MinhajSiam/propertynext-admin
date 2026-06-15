@@ -143,9 +143,9 @@ const Leads = () => {
                                         <td className="py-3 px-4 whitespace-nowrap align-top">
                                             <div className="text-sm font-bold text-gray-800">{lead.name}</div>
                                             <a href={`tel:${lead.phone}`} className="text-xs font-medium text-gray-600 hover:text-lime-600 block mt-0.5">
-                                                📞 {lead.phone}
+                                                {lead.phone}
                                             </a>
-                                            {lead.email && <div className="text-[11px] text-gray-400 mt-0.5">📧 {lead.email}</div>}
+                                            {lead.email && <div className="text-[11px] text-gray-400 mt-0.5"> {lead.email}</div>}
                                         </td>
 
                                         <td className="py-3 px-4 align-top">
