@@ -33,7 +33,7 @@ const Projects = () => {
         title: '', location: '', status: 'upcoming', mainImage: '',
         landArea: '', facing: '', height: '', totalUnits: '', sizeOfUnits: '', handover: '',
         overview: '', structuralFeatures: '', flooring: '', kitchenBath: '', electrical: '',
-        locationAdvantages: [], galleryImages: [], floorPlans: [], videoUrl: '', mapUrl: '', brochureUrl: ''
+        locationAdvantages: [], galleryImages: [], videoUrl: '', mapUrl: '', brochureUrl: ''
     };
 
     const [formData, setFormData] = useState(initialState);
@@ -254,25 +254,6 @@ const Projects = () => {
                                     </div>
                                 )}
                             </div>
-
-                            {/* Floor Plans Array */}
-                            <div className="md:col-span-2 mb-6 p-4 border border-dashed border-gray-300 rounded-lg bg-gray-50">
-                                <label className="block text-xs font-bold text-gray-600 uppercase mb-2">Floor Plans (Multiple Selection)</label>
-                                <input key={fileInputKey + "floorPlans"} type="file" multiple accept="image/*" onChange={async (e) => {
-                                    const urls = await handleGalleryUpload(e.target.files);
-                                    if (urls.length > 0) setFormData(prev => ({ ...prev, floorPlans: prev.floorPlans ? [...prev.floorPlans, ...urls] : urls }));
-                                }} className="block w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-100 hover:file:bg-blue-200 cursor-pointer text-blue-700"
-                                />
-                                {formData.floorPlans && formData.floorPlans.length > 0 && (
-                                    <div className="flex flex-wrap gap-2 mt-4">
-                                        {formData.floorPlans.map((img, idx) => (
-                                            <div key={idx} className="relative group w-20 h-20 shadow-sm"><img src={img} className="w-full h-full object-contain bg-white rounded border" alt="Floor Plan" /><button type="button" onClick={() => setFormData({ ...formData, floorPlans: formData.floorPlans.filter((_, i) => i !== idx) })} className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100"><X size={12} /></button></div>
-                                        ))}
-                                        <button type="button" onClick={() => setFormData({ ...formData, floorPlans: [] })} className="text-[11px] text-red-500 font-bold hover:underline ml-2">Clear All</button>
-                                    </div>
-                                )}
-                            </div>
-
                         </div>
 
                         <button type="submit" disabled={loading || uploading} className="mt-8 w-full md:w-auto bg-gray-900 text-brandLime font-bold px-8 py-3.5 rounded-lg hover:bg-black transition-colors flex items-center justify-center gap-2">
