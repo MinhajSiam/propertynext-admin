@@ -225,12 +225,12 @@ const Projects = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
 
                             <div className="md:col-span-2"><SectionTitle title="1. Basic Information" /></div>
-                            <InputField label="Project Title *" name="title" value={formData.title} onChange={handleChange} placeholder="e.g. The Lumina Residencies" />
-                            <InputField label="Location *" name="location" value={formData.location} onChange={handleChange} placeholder="e.g. South Kafrul, Dhaka" />
-                            <FileUploadField label="Main Cover Image *" name="mainImage" accept="image/*" />
+                            <InputField label="Project Title" name="title" value={formData.title} onChange={handleChange} placeholder="e.g. The Lumina Residencies" />
+                            <InputField label="Location" name="location" value={formData.location} onChange={handleChange} placeholder="e.g. South Kafrul, Dhaka" />
+                            <FileUploadField label="Main Cover Image" name="mainImage" accept="image/*" />
 
                             <div className="mb-4">
-                                <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Status *</label>
+                                <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Status</label>
                                 <select name="status" value={formData.status} onChange={handleChange} className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm outline-none focus:border-brandLime">
                                     <option value="upcoming">Upcoming</option>
                                     <option value="ongoing">Ongoing</option>
