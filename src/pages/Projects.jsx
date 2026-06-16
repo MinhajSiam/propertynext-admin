@@ -182,7 +182,7 @@ const Projects = () => {
         <div className="mb-4">
             <label className="block text-xs font-bold text-gray-600 uppercase mb-1">{label}</label>
             <input
-                key={fileInputKey} // Force re-render when needed
+                key={fileInputKey + name} // ক্লিয়ার বাটনে ক্লিক করলে ইনপুট ফিল্ডটি রিসেট হবে
                 type="file"
                 accept={accept}
                 onChange={async (e) => {
@@ -196,9 +196,24 @@ const Projects = () => {
             {formData[name] && (
                 <div className="mt-2 flex items-center gap-2 text-xs font-medium text-green-600 bg-green-50 p-2 rounded-md border border-green-100">
                     <span>✔ Uploaded</span>
-                    <a href={formData[name]} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-blue-600 hover:underline ml-auto">
-                        View <ExternalLink size={12} />
-                    </a>
+
+                    {/* View এবং Clear বাটন সেকশন */}
+                    <div className="ml-auto flex items-center gap-3">
+                        <a href={formData[name]} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline transition-colors">
+                            View <ExternalLink size={12} />
+                        </a>
+
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setFormData(prev => ({ ...prev, [name]: '' })); // ডাটাবেস থেকে লিংক সরিয়ে দেবে
+                                setFileInputKey(Date.now()); // ব্রাউজারের ইনপুট ফিল্ডের নাম মুছে দেবে
+                            }}
+                            className="flex items-center gap-1 text-red-500 hover:text-red-700 hover:underline border-l border-green-200 pl-3 transition-colors"
+                        >
+                            <X size={12} /> Clear
+                        </button>
+                    </div>
                 </div>
             )}
         </div>
