@@ -330,7 +330,7 @@ const Projects = () => {
                             <div key={project._id} className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col relative group">
                                 <div className="h-36 bg-gray-200 relative overflow-hidden">
                                     <img src={project.mainImage} alt={project.title} className="w-full h-full object-cover" />
-                                    <div className="absolute top-2 right-2 flex gap-1.5 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div className="absolute top-2 right-2 flex gap-1.5 z-10">
                                         <button onClick={() => handleEdit(project)} className="bg-white p-2 rounded-lg text-blue-600 hover:bg-blue-600 hover:text-white shadow-md transition-colors"><Edit size={14} /></button>
                                         <button onClick={() => handleDelete(project._id)} className="bg-white p-2 rounded-lg text-red-500 hover:bg-red-600 hover:text-white shadow-md transition-colors"><Trash2 size={14} /></button>
                                     </div>
