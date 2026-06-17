@@ -142,10 +142,10 @@ const Projects = () => {
         try {
             if (editingId) {
                 await axios.put(`https://propertynextv2-backend.onrender.com/api/projects/${editingId}`, submitData);
-                alert('Project updated successfully! 🎉');
+                alert('Project updated successfully!');
             } else {
                 await axios.post('https://propertynextv2-backend.onrender.com/api/projects/add', submitData);
-                alert('Project added successfully! 🎉');
+                alert('Project added successfully!');
             }
             resetForm();
             fetchProjects();
