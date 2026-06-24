@@ -1,13 +1,16 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Building2, Users, Settings } from 'lucide-react';
+// ব্লগের জন্য FileText আইকনটি এখানে যুক্ত করা হয়েছে
+import { LayoutDashboard, Building2, Users, Settings, FileText } from 'lucide-react';
 
 const Sidebar = () => {
     const location = useLocation();
 
+    // এই লিস্টের ভেতরে 'Manage Blogs' যুক্ত করা হয়েছে
     const menuItems = [
         { name: 'Dashboard', icon: LayoutDashboard, path: '/' },
         { name: 'Manage Projects', icon: Building2, path: '/projects' },
+        { name: 'Manage Blogs', icon: FileText, path: '/blogs' },
         { name: 'Leads & Contacts', icon: Users, path: '/leads' },
         { name: 'Settings', icon: Settings, path: '/settings' },
     ];
