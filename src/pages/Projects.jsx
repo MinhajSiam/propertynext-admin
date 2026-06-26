@@ -305,11 +305,11 @@ const Projects = () => {
                                 )}
                             </div>
 
-                            <FileUploadField label="Floor Plan Type A" name="floorPlanA" accept="image/*" />
-                            <FileUploadField label="Floor Plan Type B" name="floorPlanB" accept="image/*" />
-                            <div className="md:col-span-2">
+                            {/* <FileUploadField label="Floor Plan Type A" name="floorPlanA" accept="image/*" /> */}
+                            {/* <FileUploadField label="Floor Plan Type B" name="floorPlanB" accept="image/*" /> */}
+                            {/* <div className="md:col-span-2">
                                 <FileUploadField label="Ground Floor Plan" name="groundFloorPlan" accept="image/*" />
-                            </div>
+                            </div> */}
 
                         </div>
 
